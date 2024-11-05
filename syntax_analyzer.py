@@ -138,9 +138,53 @@ def create_table(production_rules: Dict[str, list[list[Terminal | NonTerminal]]]
     terminals_with_start_symbol.append(Terminal('$'))
     predictive_syntactic_table = DataFrame(columns=pd.Index(terminals_with_start_symbol), index=pd.Index(non_terminals))
 
-    # for k, production_rules_list in production_rules.items():
-    #     first_k = get_first(NonTerminal(k), production_rules)
-    #     for terminal in first_k:
-    #         predictive_syntactic_table.loc[]
+    for k, production_rules_list in production_rules.items():
+        first_k = first_dict[k]
+        follow_k = follow_dict[k]
+        assert first_k is not None
+        assert follow_k is not None
+        for terminal in first_k:
+            terminal_production: list[Terminal | NonTerminal] | None = None
+            for production_rule in production_rules_list:
+                has_terminal = False
+                for el in production_rule:
+                    first_el = first_dict[el.value] if type(el) is NonTerminal else set({el,})
+                    assert first_el is not None
+                    if terminal in first_el:
+                        has_terminal = True
+                        break
+                if has_terminal:
+                    terminal_production = production_rule
+                    break
+            assert terminal_production is not None
+            value = ""
+            for el in terminal_production:
+                value += el.value
+                value += " "
+            predictive_syntactic_table.loc[NonTerminal(k), terminal] = value.strip()
+        if Terminal('ε') in first_k:
+            terminal_production: list[Terminal | NonTerminal] | None = None
+            for production_rule in production_rules_list:
+                has_terminal = False
+                for el in production_rule:
+                    first_el = first_dict[el.value] if type(el) is NonTerminal else set({el,})
+                    assert first_el is not None
+                    if Terminal('ε') in first_el:
+                        has_terminal = True
+                        break
+                if has_terminal:
+                    terminal_production = production_rule
+                    break
+            assert terminal_production is not None
+            value = ""
+            for el in terminal_production:
+                value += el.value
+                value += " "
+            for terminal in follow_k:
+                predictive_syntactic_table.loc[NonTerminal(k), terminal] = value.strip()
 
     return predictive_syntactic_table
+
+predictive_syntactic_table = create_table(production_rules)
+
+predictive_syntactic_table.to_csv("pst.csv")

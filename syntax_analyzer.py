@@ -78,6 +78,7 @@ def get_first(symbol: NonTerminal | Terminal,
     for production_rule in production_rules_list:
         if (type(production_rule[0]) is Terminal or production_rule[0].value == 'ε'):
             first_set.add(production_rule[0])
+            continue
         if (type(production_rule[0]) is NonTerminal):
             previous_first = get_first(production_rule[0], production_rules)
             first_set =  first_set.union(previous_first)
@@ -188,3 +189,45 @@ def create_table(production_rules: Dict[str, list[list[Terminal | NonTerminal]]]
 predictive_syntactic_table = create_table(production_rules)
 
 predictive_syntactic_table.to_csv("pst.csv")
+
+def get_symbols_from_table_string(s: str) -> list[Terminal | NonTerminal]:
+    symbols: list[Terminal | NonTerminal] = []
+    for el in s.split():
+        if el.startswith("<") and el.endswith(">"):
+            symbols.append(NonTerminal(el))
+        else:
+            symbols.append(Terminal(el))
+    return symbols
+
+def top_down_analysis(tape: list[Terminal], ) -> bool:
+    tape.append(Terminal('$'))
+    heap: list[NonTerminal | Terminal] = [Terminal('$'), Terminal("<START>"),]
+
+    i = 0
+    x = heap[-1]
+    a = tape[i]
+
+    while x != Terminal('$'):
+        if type(x) is Terminal:
+            if x == a:
+                heap.pop()
+                i += 1
+            else:
+                print("Error 1!")
+                return False
+        else:
+            if pd.notna(predictive_syntactic_table.loc[x, a]):
+                symbols = get_symbols_from_table_string(predictive_syntactic_table.loc[x, a])
+                print(f"{x} -> {symbols}")
+                symbols.reverse()
+                heap.pop()
+                heap.extend(symbols)
+            else:
+                print("Error 2!")
+                return False
+        a = tape[i]
+        x = heap[-1]
+
+    return True
+
+# example: list[Terminal] = [Terminal('reserved_type_string'), Terminal('id'), ]

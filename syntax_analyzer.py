@@ -83,15 +83,15 @@ def get_first(symbol: NonTerminal | Terminal,
             previous_first = get_first(production_rule[0], production_rules)
             first_set =  first_set.union(previous_first)
             for i, el in enumerate(production_rule[1:]):
-                if (not type(el) is NonTerminal):
-                    break
                 if not Terminal('ε') in previous_first:
                     break
                 if not symbol == el:
-                    previous_first = get_first(production_rule[0], production_rules)
+                    previous_first = get_first(el, production_rules)
                     first_set =  first_set.union(previous_first)
                 else:
                     previous_first = first_set
+                if type(el) is Terminal:
+                    break
                 if i == (len(production_rule) - 1) and Terminal('ε') in previous_first:
                     first_set.add(Terminal('ε'))
 
@@ -108,15 +108,15 @@ def get_follow(symbol: NonTerminal,
     for k in production_rules.keys():
         production_rule_list = production_rules[k]
         for production_rule in production_rule_list:
-            if type(production_rule[-1]) is NonTerminal and production_rule[-1] == symbol and NonTerminal(k) != symbol:
+            for i, el in enumerate(production_rule):
+                if el == symbol and i < (len(production_rule) - 1):
+                    follow_set = follow_set.union(get_first(production_rule[i + 1], production_rules).difference({Terminal('ε'),}))
+            if production_rule[-1] == symbol or Terminal('ε') in get_first(production_rule[-1], production_rules):
                 if (NonTerminal(k) in computed_follows):
                     return follow_set
                 computed_follows.append(NonTerminal(k))
                 follow_set = follow_set.union(get_follow(NonTerminal(k), production_rules, computed_follows))
-            for i, el in enumerate(production_rule):
-                if type(el) is NonTerminal and el == symbol and i < (len(production_rule) - 1):
 
-                    follow_set = follow_set.union(get_first(production_rule[i + 1], production_rules).difference({Terminal('ε'),}))
 
     return follow_set
 
@@ -247,6 +247,6 @@ def top_down_analysis(tape: list[Terminal], ) -> bool:
 example: list[Terminal] = [Terminal('reserved_type_string'), Terminal('id'), Terminal('end_of_line')]
 print(f"Input: {example}")
 
-result = top_down_analysis(example)
+# result = top_down_analysis(example)
 
-print(f"Analysis result: {result}")
+# print(f"Analysis result: {result}")

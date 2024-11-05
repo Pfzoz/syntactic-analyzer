@@ -182,6 +182,7 @@ def create_table(production_rules: Dict[str, list[list[Terminal | NonTerminal]]]
                     break
         if Terminal('ε') in first_k:
             for terminal in follow_k:
+                added = False
                 for production_rule in production_rules_list:
                     first_start = first_dict[production_rule[0].value] if type(production_rule[0]) is NonTerminal else set({production_rule[0],})
                     assert first_start is not None
@@ -191,6 +192,7 @@ def create_table(production_rules: Dict[str, list[list[Terminal | NonTerminal]]]
                             value += el.value
                             value += " "
                         predictive_syntactic_table.loc[NonTerminal(k), terminal] = value.strip()
+                        added = True
                         break
                     elif terminal == Terminal('$') and (Terminal('ε') in first_start):
                         value = ""
@@ -198,7 +200,10 @@ def create_table(production_rules: Dict[str, list[list[Terminal | NonTerminal]]]
                             value += el.value
                             value += " "
                         predictive_syntactic_table.loc[NonTerminal(k), terminal] = value.strip()
+                        added = True
                         break
+                if not added:
+                    predictive_syntactic_table.loc[NonTerminal(k), terminal] = 'ε'
 
     return predictive_syntactic_table
 
@@ -224,9 +229,9 @@ def top_down_analysis(tape: list[Terminal], ) -> bool:
     a = tape[i]
 
     while x != Terminal('$'):
-        print(f"Tape: {tape} (Pos: {i})")
+        print(f"\nTape: {tape} (Pos: {i})")
         print(f"Heap: {heap}")
-        print(x, a)
+        print(f"[{x}, {a}]")
         if type(x) is Terminal:
             if x == a:
                 heap.pop()
@@ -251,9 +256,9 @@ def top_down_analysis(tape: list[Terminal], ) -> bool:
 
     return True
 
-example: list[Terminal] = [Terminal('reserved_type_string'), Terminal('id'), Terminal('end_of_line')]
-print(f"Input: {example}")
+example: list[Terminal] = [Terminal('reserved_type_string'), Terminal('id'), Terminal('op_attr'), Terminal('string'), Terminal('end_of_line')]
+print(f"Input: {example}\n")
 
 result = top_down_analysis(example)
 
-print(f"Analysis result: {result}")
+print(f"\nAnalysis result: {"Success!" if result else "Fail."}")

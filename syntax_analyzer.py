@@ -170,44 +170,35 @@ def create_table(production_rules: Dict[str, list[list[Terminal | NonTerminal]]]
         assert first_k is not None
         assert follow_k is not None
         for terminal in first_k:
-            terminal_production: list[Terminal | NonTerminal] | None = None
             for production_rule in production_rules_list:
-                has_terminal = False
-                for el in production_rule:
-                    first_el = first_dict[el.value] if type(el) is NonTerminal else set({el,})
-                    assert first_el is not None
-                    if terminal in first_el:
-                        has_terminal = True
-                        break
-                if has_terminal:
-                    terminal_production = production_rule
+                first_start = first_dict[production_rule[0].value] if type(production_rule[0]) is NonTerminal else set({production_rule[0],})
+                assert first_start is not None
+                if (terminal in first_start):
+                    value = ""
+                    for el in production_rule:
+                        value += el.value
+                        value += " "
+                    predictive_syntactic_table.loc[NonTerminal(k), terminal] = value.strip()
                     break
-            assert terminal_production is not None
-            value = ""
-            for el in terminal_production:
-                value += el.value
-                value += " "
-            predictive_syntactic_table.loc[NonTerminal(k), terminal] = value.strip()
         if Terminal('ε') in first_k:
-            terminal_production: list[Terminal | NonTerminal] | None = None
-            for production_rule in production_rules_list:
-                has_terminal = False
-                for el in production_rule:
-                    first_el = first_dict[el.value] if type(el) is NonTerminal else set({el,})
-                    assert first_el is not None
-                    if Terminal('ε') in first_el:
-                        has_terminal = True
-                        break
-                if has_terminal:
-                    terminal_production = production_rule
-                    break
-            assert terminal_production is not None
-            value = ""
-            for el in terminal_production:
-                value += el.value
-                value += " "
             for terminal in follow_k:
-                predictive_syntactic_table.loc[NonTerminal(k), terminal] = value.strip()
+                for production_rule in production_rules_list:
+                    first_start = first_dict[production_rule[0].value] if type(production_rule[0]) is NonTerminal else set({production_rule[0],})
+                    assert first_start is not None
+                    if terminal != Terminal('$') and (terminal in first_start):
+                        value = ""
+                        for el in production_rule:
+                            value += el.value
+                            value += " "
+                        predictive_syntactic_table.loc[NonTerminal(k), terminal] = value.strip()
+                        break
+                    elif terminal == Terminal('$') and (Terminal('ε') in first_start):
+                        value = ""
+                        for el in production_rule:
+                            value += el.value
+                            value += " "
+                        predictive_syntactic_table.loc[NonTerminal(k), terminal] = value.strip()
+                        break
 
     return predictive_syntactic_table
 
@@ -263,6 +254,6 @@ def top_down_analysis(tape: list[Terminal], ) -> bool:
 example: list[Terminal] = [Terminal('reserved_type_string'), Terminal('id'), Terminal('end_of_line')]
 print(f"Input: {example}")
 
-# result = top_down_analysis(example)
+result = top_down_analysis(example)
 
-# print(f"Analysis result: {result}")
+print(f"Analysis result: {result}")

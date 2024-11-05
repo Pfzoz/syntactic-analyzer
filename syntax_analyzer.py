@@ -109,13 +109,29 @@ def get_follow(symbol: NonTerminal,
         production_rule_list = production_rules[k]
         for production_rule in production_rule_list:
             for i, el in enumerate(production_rule):
-                if el == symbol and i < (len(production_rule) - 1):
-                    follow_set = follow_set.union(get_first(production_rule[i + 1], production_rules).difference({Terminal('ε'),}))
-            if production_rule[-1] == symbol or Terminal('ε') in get_first(production_rule[-1], production_rules):
-                if (NonTerminal(k) in computed_follows):
-                    return follow_set
-                computed_follows.append(NonTerminal(k))
-                follow_set = follow_set.union(get_follow(NonTerminal(k), production_rules, computed_follows))
+                if el == symbol:
+                    if i < (len(production_rule) - 1):
+                        follow_set = follow_set.union(get_first(production_rule[i + 1], production_rules).difference({Terminal('ε'),}))
+            for i in range(len(production_rule) - 1, -1, -1):
+                if production_rule[i] == symbol:
+                    if i == (len(production_rule) - 1):
+                        if (NonTerminal(k) in computed_follows):
+                            break
+                        computed_follows.append(NonTerminal(k))
+                        follow_set = follow_set.union(get_follow(NonTerminal(k), production_rules, computed_follows))
+                        break
+                    all_symbols = True
+                    for j in range(i + 1, len(production_rule)):
+                        if not Terminal('ε') in get_first(production_rule[j], production_rules):
+                            all_symbols = False
+                    if all_symbols:
+                        if (NonTerminal(k) in computed_follows):
+                            break
+                        computed_follows.append(NonTerminal(k))
+                        follow_set = follow_set.union(get_follow(NonTerminal(k), production_rules, computed_follows))
+                    break
+
+
 
 
     return follow_set

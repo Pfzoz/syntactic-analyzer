@@ -128,11 +128,20 @@ follow_dict: Dict[str, set[Terminal] | None] = {
     non_terminal.value: get_follow(non_terminal, production_rules) for non_terminal in non_terminals
 }
 
-for first_key in first_dict.keys():
-    print(f"First({first_key}) = {first_dict[first_key]}")
+with open("follow.txt", 'w+') as follow_file:
+    for k, follow_list in follow_dict.items():
+        follow_file.write(f"Follow({k}) = {follow_list}\n")
 
-for follow_key in follow_dict.keys():
-    print(f"Follow({follow_key}) = {follow_dict[follow_key]}")
+with open("first.txt", 'w+') as first_file:
+    for k, first_list in first_dict.items():
+        first_file.write(f"First({k}) = {first_list}\n")
+
+
+# for first_key in first_dict.keys():
+#     print(f"First({first_key}) = {first_dict[first_key]}")
+
+# for follow_key in follow_dict.keys():
+#     print(f"Follow({follow_key}) = {follow_dict[follow_key]}")
 
 def create_table(production_rules: Dict[str, list[list[Terminal | NonTerminal]]]) -> DataFrame:
     terminals_with_start_symbol = terminals.copy()
@@ -201,13 +210,16 @@ def get_symbols_from_table_string(s: str) -> list[Terminal | NonTerminal]:
 
 def top_down_analysis(tape: list[Terminal], ) -> bool:
     tape.append(Terminal('$'))
-    heap: list[NonTerminal | Terminal] = [Terminal('$'), Terminal("<START>"),]
+    heap: list[NonTerminal | Terminal] = [Terminal('$'), NonTerminal("<START>"),]
 
     i = 0
     x = heap[-1]
     a = tape[i]
 
     while x != Terminal('$'):
+        print(f"Tape: {tape} (Pos: {i})")
+        print(f"Heap: {heap}")
+        print(x, a)
         if type(x) is Terminal:
             if x == a:
                 heap.pop()
@@ -220,6 +232,8 @@ def top_down_analysis(tape: list[Terminal], ) -> bool:
                 symbols = get_symbols_from_table_string(predictive_syntactic_table.loc[x, a])
                 print(f"{x} -> {symbols}")
                 symbols.reverse()
+                if Terminal('ε') in symbols:
+                    symbols.remove(Terminal('ε'))
                 heap.pop()
                 heap.extend(symbols)
             else:
@@ -230,4 +244,9 @@ def top_down_analysis(tape: list[Terminal], ) -> bool:
 
     return True
 
-# example: list[Terminal] = [Terminal('reserved_type_string'), Terminal('id'), ]
+example: list[Terminal] = [Terminal('reserved_type_string'), Terminal('id'), Terminal('end_of_line')]
+print(f"Input: {example}")
+
+result = top_down_analysis(example)
+
+print(f"Analysis result: {result}")

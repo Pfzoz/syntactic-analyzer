@@ -6,8 +6,9 @@ data = pd.read_csv("grammar-data.csv")
 
 class Terminal:
 
-    def __init__(self, value: str) -> None:
+    def __init__(self, value: str, line: int | None = None) -> None:
         self.value: str = value
+        self.line = line
 
     def __repr__(self) -> str:
         return f"Terminal({self.value})"
@@ -242,7 +243,7 @@ def top_down_analysis(tape: list[Terminal], ) -> bool:
                 heap.pop()
                 i += 1
             else:
-                print(f"Token doesn't match! Token {i} {a} against {x}. Token discarded.")
+                print(f"Token doesn't match! Token {i}, {a.line}, {a} against {x}. Token discarded.")
                 if a == Terminal('$'):
                     print("Could not recognize end of grammar.")
                     return False
@@ -258,10 +259,10 @@ def top_down_analysis(tape: list[Terminal], ) -> bool:
                     heap.pop()
                     heap.extend(symbols)
                 else:
-                    print(f"Sinc encountered! Token {i}: {a}")
+                    print(f"Sinc encountered! Token {i}, {a.line}: {a}")
                     heap.pop()
             else:
-                print(f"Error found at token {i}: {a} (No entry on PST). Token discarded.")
+                print(f"Error found at token {i}, line {a.line}: {a} (No entry on PST). Token discarded.")
                 if a == Terminal('$'):
                     print("Could not recognize end of grammar.")
                     return False

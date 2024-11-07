@@ -243,7 +243,7 @@ def top_down_analysis(tape: list[Terminal], ) -> bool:
                 heap.pop()
                 i += 1
             else:
-                print(f"Token doesn't match! Token {i}, {a.line}, {a} against {x}. Token discarded.")
+                print(f"Token doesn't match! Token {i}, line {a.line}, {a} against {x}. Token discarded.")
                 if a == Terminal('$'):
                     print("Could not recognize end of grammar.")
                     return False
@@ -259,7 +259,7 @@ def top_down_analysis(tape: list[Terminal], ) -> bool:
                     heap.pop()
                     heap.extend(symbols)
                 else:
-                    print(f"Sinc encountered! Token {i}, {a.line}: {a}")
+                    print(f"Sinc encountered! Token {i}, line {a.line}: {a}")
                     heap.pop()
             else:
                 print(f"Error found at token {i}, line {a.line}: {a} (No entry on PST). Token discarded.")
@@ -272,7 +272,7 @@ def top_down_analysis(tape: list[Terminal], ) -> bool:
 
     return True
 
-example: list[Terminal] = [Terminal('reserved_type_string'), Terminal('id'), Terminal('op_attr'), Terminal('id'), Terminal('end_of_line')]
+example: list[Terminal] = [Terminal('reserved_type_string'), Terminal('id'), Terminal('op_attr'), Terminal('end_of_line')]
 print(f"Input: {example}\n")
 
 result = top_down_analysis(example)

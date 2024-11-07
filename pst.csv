@@ -1,36 +1,36 @@
 ,Terminal(reserved_type_string),Terminal(reserved_type_char),Terminal(initial_block),Terminal(final_block),Terminal(op_logic_greater),Terminal(reserved_type_number),Terminal(end_of_line),Terminal(initial_parenthesis),Terminal(final_parenthesis),Terminal(id),Terminal(reserved_type_struct),Terminal(op_arit_sum),Terminal(op_attr),Terminal(op_arit_sub),Terminal(reserved_directive_if),Terminal(reserved_directive_else),Terminal(reserved_directive_else_if),Terminal(reserved_directive_loop),Terminal(op_logic_smaller),Terminal(reserved_func_read),Terminal(reserved_func_write),Terminal(reserved_func_input),Terminal(reserved_func_print),Terminal(comma),Terminal(reserved_directive_return),Terminal(op_arit_mult),Terminal(op_arit_div),Terminal(op_logic_equal),Terminal(number),Terminal(string),Terminal(char),Terminal(point),Terminal(reserved_type_void),Terminal(op_logic_greater_equal),Terminal(op_logic_smaller_equal),Terminal($),Terminal(ε)
 NonTerminal(<START>),<SENTENCE>,<SENTENCE>,<SENTENCE>,,,<SENTENCE>,,,,<SENTENCE>,<SENTENCE>,,,,<SENTENCE>,,,<SENTENCE>,,<SENTENCE>,<SENTENCE>,<SENTENCE>,<SENTENCE>,,<SENTENCE>,,,,<SENTENCE>,<SENTENCE>,<SENTENCE>,,<SENTENCE>,,,<SENTENCE>,<SENTENCE>
-NonTerminal(<DECLARATION>),<TYPE> id <ATTRIBUTION_DECLARATION>,<TYPE> id <ATTRIBUTION_DECLARATION>,,,,<TYPE> id <ATTRIBUTION_DECLARATION>,,,,,,,,,,,,,,,,,,,,,,,,,,,<TYPE> id <ATTRIBUTION_DECLARATION>,,,,
+NonTerminal(<DECLARATION>),<TYPE> id <ATTRIBUTION_DECLARATION>,<TYPE> id <ATTRIBUTION_DECLARATION>,sinc,sinc,,<TYPE> id <ATTRIBUTION_DECLARATION>,,,,sinc,sinc,,,,sinc,,,sinc,,sinc,sinc,sinc,sinc,sinc,sinc,,,,sinc,sinc,sinc,,<TYPE> id <ATTRIBUTION_DECLARATION>,,,sinc,
 NonTerminal(<SENTENCE>),<SENTENCE_BODY> <SENTENCE>,<SENTENCE_BODY> <SENTENCE>,<SENTENCE_BODY> <SENTENCE>,ε,,<SENTENCE_BODY> <SENTENCE>,,,,<SENTENCE_BODY> <SENTENCE>,<SENTENCE_BODY> <SENTENCE>,,,,<SENTENCE_BODY> <SENTENCE>,,,<SENTENCE_BODY> <SENTENCE>,,<SENTENCE_BODY> <SENTENCE>,<SENTENCE_BODY> <SENTENCE>,<SENTENCE_BODY> <SENTENCE>,<SENTENCE_BODY> <SENTENCE>,,<SENTENCE_BODY> <SENTENCE>,,,,<SENTENCE_BODY> <SENTENCE>,<SENTENCE_BODY> <SENTENCE>,<SENTENCE_BODY> <SENTENCE>,,<SENTENCE_BODY> <SENTENCE>,,,ε,ε
-NonTerminal(<EXPRESSION>),,,,,,,,initial_parenthesis <OP'> final_parenthesis <OPERATION>,,<ID> <OPERATION>,,,,,,,,,,<FUNCTION_CALL> <OPERATION>,<FUNCTION_CALL> <OPERATION>,<FUNCTION_CALL> <OPERATION>,<FUNCTION_CALL> <OPERATION>,,,,,,number <OPERATION>,string <OPERATION>,char <OPERATION>,,,,,,
-NonTerminal(<BLOCK>),,,initial_block <SENTENCE> final_block,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-NonTerminal(<TYPE>),reserved_type_string,reserved_type_char,,,,reserved_type_number,,,,,,,,,,,,,,,,,,,,,,,,,,,reserved_type_void,,,,
-NonTerminal(<PARAMETERS>),<PARAMETER> <ADDITIONAL_PARAMETERS>,<PARAMETER> <ADDITIONAL_PARAMETERS>,,,,<PARAMETER> <ADDITIONAL_PARAMETERS>,,,,,,,,,,,,,,,,,,,,,,,,,,,<PARAMETER> <ADDITIONAL_PARAMETERS>,,,,
-NonTerminal(<PARAMETER>),<TYPE> id,<TYPE> id,,,,<TYPE> id,,,,,,,,,,,,,,,,,,,,,,,,,,,<TYPE> id,,,,
-NonTerminal(<FUNCTION_CALL>),,,,,,,,,,,,,,,,,,,,<CALLER> <FUNCTION_CALL'>,<CALLER> <FUNCTION_CALL'>,<CALLER> <FUNCTION_CALL'>,<CALLER> <FUNCTION_CALL'>,,,,,,,,,,,,,,
+NonTerminal(<EXPRESSION>),,,,,,,sinc,initial_parenthesis <OP'> final_parenthesis <OPERATION>,sinc,<ID> <OPERATION>,,,,,,,,,,<FUNCTION_CALL> <OPERATION>,<FUNCTION_CALL> <OPERATION>,<FUNCTION_CALL> <OPERATION>,<FUNCTION_CALL> <OPERATION>,sinc,,,,,number <OPERATION>,string <OPERATION>,char <OPERATION>,,,,,,
+NonTerminal(<BLOCK>),sinc,sinc,initial_block <SENTENCE> final_block,sinc,,sinc,,,,sinc,sinc,,,,sinc,sinc,,sinc,,sinc,sinc,sinc,sinc,sinc,sinc,,,,sinc,sinc,sinc,,sinc,,,sinc,
+NonTerminal(<TYPE>),reserved_type_string,reserved_type_char,,,,reserved_type_number,,,,sinc,,,,,,,,,,,,,,,,,,,,,,,reserved_type_void,,,,
+NonTerminal(<PARAMETERS>),<PARAMETER> <ADDITIONAL_PARAMETERS>,<PARAMETER> <ADDITIONAL_PARAMETERS>,,,,<PARAMETER> <ADDITIONAL_PARAMETERS>,,,sinc,,,,,,,,,,,,,,,,,,,,,,,,<PARAMETER> <ADDITIONAL_PARAMETERS>,,,,
+NonTerminal(<PARAMETER>),<TYPE> id,<TYPE> id,,,,<TYPE> id,,,sinc,,,,,,,,,,,,,,,sinc,,,,,,,,,<TYPE> id,,,,
+NonTerminal(<FUNCTION_CALL>),,,,,sinc,,sinc,sinc,sinc,sinc,,sinc,,sinc,,,,,sinc,<CALLER> <FUNCTION_CALL'>,<CALLER> <FUNCTION_CALL'>,<CALLER> <FUNCTION_CALL'>,<CALLER> <FUNCTION_CALL'>,sinc,,,,sinc,sinc,sinc,sinc,,,sinc,sinc,,
 NonTerminal(<ADDITIONAL_PARAMETERS>),,,,,,,,,ε,,,,,,,,,,,,,,,comma <PARAMETER> <ADDITIONAL_PARAMETERS>,,,,,,,,,,,,,ε
-NonTerminal(<LOOP>),,,,,,,,,,,,,,,,,,reserved_directive_loop initial_parenthesis <EXPRESSION> final_parenthesis <BLOCK>,,,,,,,,,,,,,,,,,,,
-NonTerminal(<CALLER>),,,,,,,,,,,,,,,,,,,,reserved_func_read,reserved_func_write,reserved_func_input,reserved_func_print,,,,,,,,,,,,,,
-NonTerminal(<CONDITION_SEQUENCE>),,,,,,,,,,,,,,,reserved_directive_if initial_parenthesis <EXPRESSION> final_parenthesis <BLOCK> <ALTERNATIVE_CONDITIONS>,,,,,,,,,,,,,,,,,,,,,,
-NonTerminal(<STRUCT>),,,,,,,,,,,reserved_type_struct id initial_block <STRUCT_ATTRIBUTES> final_block,,,,,,,,,,,,,,,,,,,,,,,,,,
-NonTerminal(<DECLARED_LOOP>),,,,,,,,,,,,,,,,,,reserved_directive_loop initial_parenthesis <DECLARATION> comma <EXPRESSION> comma <ATTRIBUTION> final_parenthesis <BLOCK>,,,,,,,,,,,,,,,,,,,
+NonTerminal(<LOOP>),sinc,sinc,sinc,sinc,,sinc,,,,sinc,sinc,,,,sinc,,,reserved_directive_loop initial_parenthesis <EXPRESSION> final_parenthesis <BLOCK>,,sinc,sinc,sinc,sinc,,sinc,,,,sinc,sinc,sinc,,sinc,,,sinc,
+NonTerminal(<CALLER>),,,,,sinc,,sinc,sinc,sinc,sinc,,sinc,,sinc,,,,,sinc,reserved_func_read,reserved_func_write,reserved_func_input,reserved_func_print,sinc,,,,sinc,sinc,sinc,sinc,,,sinc,sinc,,
+NonTerminal(<CONDITION_SEQUENCE>),sinc,sinc,sinc,sinc,,sinc,,,,sinc,sinc,,,,reserved_directive_if initial_parenthesis <EXPRESSION> final_parenthesis <BLOCK> <ALTERNATIVE_CONDITIONS>,,,sinc,,sinc,sinc,sinc,sinc,,sinc,,,,sinc,sinc,sinc,,sinc,,,sinc,
+NonTerminal(<STRUCT>),sinc,sinc,sinc,sinc,,sinc,,,,sinc,reserved_type_struct id initial_block <STRUCT_ATTRIBUTES> final_block,,,,sinc,,,sinc,,sinc,sinc,sinc,sinc,,sinc,,,,sinc,sinc,sinc,,sinc,,,sinc,
+NonTerminal(<DECLARED_LOOP>),sinc,sinc,sinc,sinc,,sinc,,,,sinc,sinc,,,,sinc,,,reserved_directive_loop initial_parenthesis <DECLARATION> comma <EXPRESSION> comma <ATTRIBUTION> final_parenthesis <BLOCK>,,sinc,sinc,sinc,sinc,,sinc,,,,sinc,sinc,sinc,,sinc,,,sinc,
 NonTerminal(<ALTERNATIVE_CONDITIONS>),ε,ε,ε,ε,,ε,,,,ε,ε,,,,ε,reserved_directive_else <ALTERNATIVE_CONDITIONS'>,,ε,,ε,ε,ε,ε,,ε,,,,ε,ε,ε,,ε,,,ε,ε
 NonTerminal(<STRUCT_ATTRIBUTES>),<TYPE> id end_of_line <STRUCT_ATTRIBUTES>,<TYPE> id end_of_line <STRUCT_ATTRIBUTES>,,ε,,<TYPE> id end_of_line <STRUCT_ATTRIBUTES>,,,,,,,,,,,,,,,,,,,,,,,,,,,<TYPE> id end_of_line <STRUCT_ATTRIBUTES>,,,,ε
 NonTerminal(<ARGUMENTS>),,,,,,,,<EXPRESSION> <ARGUMENTS>,ε,<EXPRESSION> <ARGUMENTS>,,,,,,,,,,<EXPRESSION> <ARGUMENTS>,<EXPRESSION> <ARGUMENTS>,<EXPRESSION> <ARGUMENTS>,<EXPRESSION> <ARGUMENTS>,,,,,,<EXPRESSION> <ARGUMENTS>,<EXPRESSION> <ARGUMENTS>,<EXPRESSION> <ARGUMENTS>,,,,,,ε
-NonTerminal(<ID>),,,,,,,,,,id <ID'>,,,,,,,,,,,,,,,,,,,,,,,,,,,
+NonTerminal(<ID>),,,,,sinc,,sinc,sinc,sinc,id <ID'>,,sinc,,sinc,,,,,sinc,sinc,sinc,sinc,sinc,sinc,,,,sinc,sinc,sinc,sinc,,,sinc,sinc,,
 NonTerminal(<PROPERTIES>),,,,,ε,,ε,ε,ε,ε,,ε,ε,ε,,,,,ε,ε,ε,ε,ε,ε,,,,ε,ε,ε,ε,point id <PROPERTIES>,,ε,ε,,ε
-NonTerminal(<OP>),,,,,op_logic_greater,,,,,,,op_arit_sum,,op_arit_sub,,,,,op_logic_smaller,,,,,,,,,op_logic_equal,,,,,,op_logic_greater_equal,op_logic_smaller_equal,,
-NonTerminal(<ALL_OPERATIONS>),,,,,,,,,,id <ALL_OPERATIONS'>,,,,,,,,,,<TERM> <OPERATION> end_of_line,<TERM> <OPERATION> end_of_line,<TERM> <OPERATION> end_of_line,<TERM> <OPERATION> end_of_line,,,,,,<TERM> <OPERATION> end_of_line,<TERM> <OPERATION> end_of_line,<TERM> <OPERATION> end_of_line,,,,,,
+NonTerminal(<OP>),,,,,op_logic_greater,,,sinc,,sinc,,op_arit_sum,,op_arit_sub,,,,,op_logic_smaller,sinc,sinc,sinc,sinc,,,,,op_logic_equal,sinc,sinc,sinc,,,op_logic_greater_equal,op_logic_smaller_equal,,
+NonTerminal(<ALL_OPERATIONS>),sinc,sinc,sinc,sinc,,sinc,,,,id <ALL_OPERATIONS'>,sinc,,,,sinc,,,sinc,,<TERM> <OPERATION> end_of_line,<TERM> <OPERATION> end_of_line,<TERM> <OPERATION> end_of_line,<TERM> <OPERATION> end_of_line,,sinc,,,,<TERM> <OPERATION> end_of_line,<TERM> <OPERATION> end_of_line,<TERM> <OPERATION> end_of_line,,sinc,,,sinc,
 NonTerminal(<OPERATION>),,,,,<OP> <EXPRESSION>,,ε,ε,ε,ε,,<OP> <EXPRESSION>,,<OP> <EXPRESSION>,,,,,<OP> <EXPRESSION>,ε,ε,ε,ε,ε,,,,<OP> <EXPRESSION>,ε,ε,ε,,,<OP> <EXPRESSION>,<OP> <EXPRESSION>,,ε
-NonTerminal(<OP'>),,,,,,,,,,,,,,,,,,,,,,,,,,op_arit_mult,op_arit_div,,,,,,,,,,
+NonTerminal(<OP'>),,,,,,,,,sinc,,,,,,,,,,,,,,,,,op_arit_mult,op_arit_div,,,,,,,,,,
 NonTerminal(<ALL_OPERATIONS'>),ε,ε,ε,ε,,ε,,<ID'> <OP> <EXPRESSION> end_of_line,,<ID_DECLARATION>,ε,,op_attr <EXPRESSION> end_of_line,,ε,,,ε,,ε,ε,ε,ε,,ε,,,,ε,ε,ε,<ID'> <OP> <EXPRESSION> end_of_line,ε,,,<ID'> <OP> <EXPRESSION> end_of_line,<ID'> <OP> <EXPRESSION> end_of_line
-NonTerminal(<CALL>),,,,,,,,initial_parenthesis <ARGUMENTS> final_parenthesis,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+NonTerminal(<CALL>),,,,,sinc,,sinc,initial_parenthesis <ARGUMENTS> final_parenthesis,sinc,sinc,,sinc,,sinc,,,,,sinc,sinc,sinc,sinc,sinc,sinc,,,,sinc,sinc,sinc,sinc,,,sinc,sinc,,
 NonTerminal(<ID'>),,,,,ε,,ε,<CALL>,ε,ε,,ε,,ε,,,,,ε,ε,ε,ε,ε,ε,,,,ε,ε,ε,ε,<PROPERTIES>,,ε,ε,,<PROPERTIES>
-NonTerminal(<TERM>),,,,,,,,,,,,,,,,,,,,<FUNCTION_CALL>,<FUNCTION_CALL>,<FUNCTION_CALL>,<FUNCTION_CALL>,,,,,,number,string,char,,,,,,
-NonTerminal(<FUNCTION_DECLARATION>),,,,,,,,initial_parenthesis <PARAMETERS> final_parenthesis <BLOCK>,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-NonTerminal(<ATTRIBUTION_DECLARATION>),,,,,,,end_of_line,<FUNCTION_DECLARATION>,,,,,op_attr <EXPRESSION> end_of_line,,,,,,,,,,,,,,,,,,,,,,,,
+NonTerminal(<TERM>),,,,,sinc,,,,,,,sinc,,sinc,,,,,sinc,<FUNCTION_CALL>,<FUNCTION_CALL>,<FUNCTION_CALL>,<FUNCTION_CALL>,,,,,sinc,number,string,char,,,sinc,sinc,,
+NonTerminal(<FUNCTION_DECLARATION>),sinc,sinc,sinc,sinc,,sinc,,initial_parenthesis <PARAMETERS> final_parenthesis <BLOCK>,,sinc,sinc,,,,sinc,,,sinc,,sinc,sinc,sinc,sinc,sinc,sinc,,,,sinc,sinc,sinc,,sinc,,,sinc,
+NonTerminal(<ATTRIBUTION_DECLARATION>),sinc,sinc,sinc,sinc,,sinc,end_of_line,<FUNCTION_DECLARATION>,,sinc,sinc,,op_attr <EXPRESSION> end_of_line,,sinc,,,sinc,,sinc,sinc,sinc,sinc,sinc,sinc,,,,sinc,sinc,sinc,,sinc,,,sinc,
 NonTerminal(<FUNCTION_CALL'>),,,,,ε,,ε,<CALL>,ε,ε,,ε,,ε,,,,,ε,ε,ε,ε,ε,ε,,,,ε,ε,ε,ε,,,ε,ε,,ε
-NonTerminal(<SENTENCE_BODY>),<DECLARATION>,<DECLARATION>,<BLOCK>,,,<DECLARATION>,,,,<ALL_OPERATIONS>,<STRUCT>,,,,<CONDITION_SEQUENCE>,,,<LOOP>,,<ALL_OPERATIONS>,<ALL_OPERATIONS>,<ALL_OPERATIONS>,<ALL_OPERATIONS>,,reserved_directive_return <EXPRESSION> end_of_line,,,,<ALL_OPERATIONS>,<ALL_OPERATIONS>,<ALL_OPERATIONS>,,<DECLARATION>,,,,
-NonTerminal(<ATTRIBUTION>),,,,,,,,,,id <PROPERTIES> op_attr <EXPRESSION>,,,,,,,,,,,,,,,,,,,,,,,,,,,
-NonTerminal(<ID_DECLARATION>),,,,,,,,,,id <ATTRIBUTION_DECLARATION>,,,,,,,,,,,,,,,,,,,,,,,,,,,
-NonTerminal(<ALTERNATIVE_CONDITIONS'>),,,<BLOCK>,,,,,,,,,,,,reserved_directive_if initial_parenthesis <EXPRESSION> final_parenthesis <BLOCK> <ALTERNATIVE_CONDITIONS>,,,,,,,,,,,,,,,,,,,,,,
+NonTerminal(<SENTENCE_BODY>),<DECLARATION>,<DECLARATION>,<BLOCK>,sinc,,<DECLARATION>,,,,<ALL_OPERATIONS>,<STRUCT>,,,,<CONDITION_SEQUENCE>,,,<LOOP>,,<ALL_OPERATIONS>,<ALL_OPERATIONS>,<ALL_OPERATIONS>,<ALL_OPERATIONS>,,reserved_directive_return <EXPRESSION> end_of_line,,,,<ALL_OPERATIONS>,<ALL_OPERATIONS>,<ALL_OPERATIONS>,,<DECLARATION>,,,sinc,
+NonTerminal(<ATTRIBUTION>),,,,,,,,,sinc,id <PROPERTIES> op_attr <EXPRESSION>,,,,,,,,,,,,,,,,,,,,,,,,,,,
+NonTerminal(<ID_DECLARATION>),sinc,sinc,sinc,sinc,,sinc,,,,id <ATTRIBUTION_DECLARATION>,sinc,,,,sinc,,,sinc,,sinc,sinc,sinc,sinc,,sinc,,,,sinc,sinc,sinc,,sinc,,,sinc,
+NonTerminal(<ALTERNATIVE_CONDITIONS'>),sinc,sinc,<BLOCK>,sinc,,sinc,,,,sinc,sinc,,,,reserved_directive_if initial_parenthesis <EXPRESSION> final_parenthesis <BLOCK> <ALTERNATIVE_CONDITIONS>,,,sinc,,sinc,sinc,sinc,sinc,,sinc,,,,sinc,sinc,sinc,,sinc,,,sinc,

@@ -180,6 +180,8 @@ def create_table(production_rules: Dict[str, list[list[Terminal | NonTerminal]]]
                         value += " "
                     predictive_syntactic_table.loc[NonTerminal(k), terminal] = value.strip()
                     break
+
+
         if Terminal('ε') in first_k:
             for terminal in follow_k:
                 added = False
@@ -204,7 +206,10 @@ def create_table(production_rules: Dict[str, list[list[Terminal | NonTerminal]]]
                         break
                 if not added:
                     predictive_syntactic_table.loc[NonTerminal(k), terminal] = 'ε'
-
+        for terminal in follow_k:
+            for production_rule in production_rules_list:
+                if pd.isna(predictive_syntactic_table.loc[NonTerminal(k), terminal]):
+                    predictive_syntactic_table.loc[NonTerminal(k), terminal] = "sinc"
     return predictive_syntactic_table
 
 predictive_syntactic_table = create_table(production_rules)
@@ -229,36 +234,46 @@ def top_down_analysis(tape: list[Terminal], ) -> bool:
     a = tape[i]
 
     while x != Terminal('$'):
-        print(f"\nTape: {tape} (Pos: {i})")
-        print(f"Heap: {heap}")
-        print(f"[{x}, {a}]")
+        # print(f"\nTape: {tape} (Pos: {i})")
+        # print(f"Heap: {heap}")
+        # print(f"[{x}, {a}]")
         if type(x) is Terminal:
             if x == a:
                 heap.pop()
                 i += 1
             else:
-                print("Error 1!")
-                return False
+                print(f"Token doesn't match! Token {i} {a} against {x}. Token discarded.")
+                if a == Terminal('$'):
+                    print("Could not recognize end of grammar.")
+                    return False
+                tape.pop(0)
         else:
             if pd.notna(predictive_syntactic_table.loc[x, a]):
-                symbols = get_symbols_from_table_string(predictive_syntactic_table.loc[x, a])
-                print(f"{x} -> {symbols}")
-                symbols.reverse()
-                if Terminal('ε') in symbols:
-                    symbols.remove(Terminal('ε'))
-                heap.pop()
-                heap.extend(symbols)
+                if predictive_syntactic_table.loc[x, a] != "sinc":
+                    symbols = get_symbols_from_table_string(predictive_syntactic_table.loc[x, a])
+                    # print(f"{x} -> {symbols}")
+                    symbols.reverse()
+                    if Terminal('ε') in symbols:
+                        symbols.remove(Terminal('ε'))
+                    heap.pop()
+                    heap.extend(symbols)
+                else:
+                    print(f"Sinc encountered! Token {i}: {a}")
+                    heap.pop()
             else:
-                print("Error 2!")
-                return False
+                print(f"Error found at token {i}: {a} (No entry on PST). Token discarded.")
+                if a == Terminal('$'):
+                    print("Could not recognize end of grammar.")
+                    return False
+                tape.pop(0)
         a = tape[i]
         x = heap[-1]
 
     return True
 
-example: list[Terminal] = [Terminal('reserved_type_string'), Terminal('id'), Terminal('op_attr'), Terminal('string'), Terminal('end_of_line')]
+example: list[Terminal] = [Terminal('reserved_type_string'), Terminal('id'), Terminal('op_attr'), Terminal('id'), Terminal('end_of_line')]
 print(f"Input: {example}\n")
 
 result = top_down_analysis(example)
 
-print(f"\nAnalysis result: {"Success!" if result else "Fail."}")
+print(f"\nAnalysis result: {'Success!' if result else 'Fail.'}")

@@ -3,13 +3,14 @@ import pandas as pd
 from pandas.core.groupby.grouper import DataFrame
 from sys import argv
 
-data = pd.read_csv("grammar-data.csv")
+data = pd.read_csv("syntactic_analyzer/grammar-data.csv")
 
 class Terminal:
 
-    def __init__(self, value: str, line: int | None = None) -> None:
+    def __init__(self, value: str, symbol: str | str = ".", line: int | None = None) -> None:
         self.value: str = value
         self.line = line
+        self.symbol: str = symbol
 
     def __repr__(self) -> str:
         return f"Terminal({self.value})"
@@ -146,11 +147,11 @@ follow_dict: Dict[str, set[Terminal] | None] = {
     non_terminal.value: get_follow(non_terminal, production_rules) for non_terminal in non_terminals
 }
 
-with open("follow.txt", 'w+') as follow_file:
+with open("syntactic_analyzer\follow.txt", 'w+') as follow_file:
     for k, follow_list in follow_dict.items():
         follow_file.write(f"Follow({k}) = {follow_list}\n")
 
-with open("first.txt", 'w+') as first_file:
+with open("syntactic_analyzer\first.txt", 'w+') as first_file:
     for k, first_list in first_dict.items():
         first_file.write(f"First({k}) = {first_list}\n")
 
@@ -271,10 +272,10 @@ def top_down_analysis(tape: list[Terminal], ) -> bool:
                     heap.pop()
                     heap.extend(symbols)
                 else:
-                    print(f"Sinc encountered! Token {i}, line {a.line}: {a}")
+                    print(f"Sinc encountered! Token {i}, line {a.line}: {a}. Token: {a.symbol}")
                     heap.pop()
             else:
-                print(f"Error found at token {i}, line {a.line}: {a} (No entry on PST). Token discarded.")
+                print(f"Error found at token {i}, line {a.line}: {a} (No entry on PST). Token {a.symbol} discarded.")
                 if a == Terminal('$'):
                     print("Could not recognize end of grammar.")
                     return False
@@ -287,7 +288,7 @@ def top_down_analysis(tape: list[Terminal], ) -> bool:
 example: list[Terminal] = [Terminal('id'), Terminal('id'), Terminal('op_attr'), Terminal('string'), Terminal('end_of_line')]
 print(f"Input: {example}\n")
 
-result = top_down_analysis(example)
+# result = top_down_analysis(example)
 
 
 

@@ -1,6 +1,7 @@
 from typing import Any, Dict
 import pandas as pd
 from pandas.core.groupby.grouper import DataFrame
+from sys import argv
 
 data = pd.read_csv("grammar-data.csv")
 
@@ -205,11 +206,17 @@ def create_table(production_rules: Dict[str, list[list[Terminal | NonTerminal]]]
                         predictive_syntactic_table.loc[NonTerminal(k), terminal] = value.strip()
                         added = True
                         break
-                if not added:
+                if not added and Terminal('ε') in first_k:
                     predictive_syntactic_table.loc[NonTerminal(k), terminal] = 'ε'
-        for terminal in follow_k:
-            for production_rule in production_rules_list:
-                if pd.isna(predictive_syntactic_table.loc[NonTerminal(k), terminal]):
+        if Terminal('ε') in first_k:
+            for terminal in follow_k:
+                added = False
+                for production_rule in production_rules_list:
+                    if production_rule == [Terminal('ε')]:
+                        predictive_syntactic_table.loc[NonTerminal(k), terminal] = 'ε'
+                        added = True
+                        break
+                if not added:
                     predictive_syntactic_table.loc[NonTerminal(k), terminal] = "sinc"
     return predictive_syntactic_table
 
@@ -234,10 +241,14 @@ def top_down_analysis(tape: list[Terminal], ) -> bool:
     x = heap[-1]
     a = tape[i]
 
+    show_symbols = "-ss" in argv
+    show_grammar_results = "-sg" in argv
+
     while x != Terminal('$'):
-        # print(f"\nTape: {tape} (Pos: {i})")
-        # print(f"Heap: {heap}")
-        # print(f"[{x}, {a}]")
+        if show_symbols:
+            print(f"\nTape: {tape} (Pos: {i})")
+            print(f"Heap: {heap}")
+            print(f"[{x}, {a}]")
         if type(x) is Terminal:
             if x == a:
                 heap.pop()
@@ -252,7 +263,8 @@ def top_down_analysis(tape: list[Terminal], ) -> bool:
             if pd.notna(predictive_syntactic_table.loc[x, a]):
                 if predictive_syntactic_table.loc[x, a] != "sinc":
                     symbols = get_symbols_from_table_string(predictive_syntactic_table.loc[x, a])
-                    # print(f"{x} -> {symbols}")
+                    if show_grammar_results:
+                        print(f"{x} -> {symbols}")
                     symbols.reverse()
                     if Terminal('ε') in symbols:
                         symbols.remove(Terminal('ε'))
@@ -272,9 +284,11 @@ def top_down_analysis(tape: list[Terminal], ) -> bool:
 
     return True
 
-example: list[Terminal] = [Terminal('reserved_type_string'), Terminal('id'), Terminal('op_attr'), Terminal('end_of_line')]
+example: list[Terminal] = [Terminal('id'), Terminal('id'), Terminal('op_attr'), Terminal('string'), Terminal('end_of_line')]
 print(f"Input: {example}\n")
 
 result = top_down_analysis(example)
+
+
 
 print(f"\nAnalysis result: {'Success!' if result else 'Fail.'}")

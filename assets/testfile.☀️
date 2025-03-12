@@ -1,12 +1,14 @@
 number main () 🏳
 	number var1☕
 	number var2☕
+
 	loop (var1 > 0) 🏳
 		print(📓Escreva o valor de a📓)☕
 		input(var1)☕
 	🏁
 	print(📓Escreva o valor de b📓)☕
 	input(var2)☕
+
 	if (var1 > var2) 🏳
 		print(var1 ➕ 📓 é maior que 📓➕var2)☕
 		return var1☕

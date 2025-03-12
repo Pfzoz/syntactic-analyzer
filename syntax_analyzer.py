@@ -8,7 +8,7 @@ if len(argv) < 2 or argv[1].startswith("-"):
     print("Expected file path input. Failed. Exitting...")
     exit()
 
-data = pd.read_csv("syntactic_analyzer/grammar-data.csv")
+data = pd.read_csv("grammar-data.csv")
 
 class Terminal:
 

@@ -2,6 +2,11 @@ from typing import Any, Dict
 import pandas as pd
 from pandas.core.groupby.grouper import DataFrame
 from sys import argv
+from lexanalyzer import analysis, Token
+
+if len(argv) < 2 or argv[1].startswith("-"):
+    print("Expected file path input. Failed. Exitting...")
+    exit()
 
 data = pd.read_csv("grammar-data.csv")
 
@@ -37,6 +42,10 @@ class NonTerminal:
 
     def __hash__(self) -> int:
         return hash(self.value)
+
+def terminal_from_token(token: Token, line: int):
+    terminal = Terminal(token.type, line)
+    return terminal
 
 non_terminals_df = data["NON_TERMINALS"].dropna()
 terminals_df = data["TERMINALS"].dropna()
@@ -173,51 +182,110 @@ def create_table(production_rules: Dict[str, list[list[Terminal | NonTerminal]]]
         assert follow_k is not None
         for terminal in first_k:
             for production_rule in production_rules_list:
-                first_start = first_dict[production_rule[0].value] if type(production_rule[0]) is NonTerminal else set({production_rule[0],})
-                assert first_start is not None
-                if (terminal in first_start):
-                    value = ""
-                    for el in production_rule:
-                        value += el.value
-                        value += " "
+                first_set = set()
+                for symbol in production_rule:
+                    if isinstance(symbol, Terminal):
+                        first_set.add(symbol)
+                        if symbol.value != 'ε':  # Stop if non-nullable terminal found
+                            break
+                    else:
+                        first_non_terminal_first = first_dict.get(symbol.value, set())
+                        assert first_non_terminal_first is not None
+                        first_set |= (first_non_terminal_first - {Terminal('ε')})
+                        if Terminal('ε') not in first_non_terminal_first:
+                            break
+
+                if terminal in first_set:
+                    value = " ".join(el.value for el in production_rule)
                     predictive_syntactic_table.loc[NonTerminal(k), terminal] = value.strip()
-                    break
+                # first_start = first_dict[production_rule[0].value] if type(production_rule[0]) is NonTerminal else set({production_rule[0],})
+                # assert first_start is not None
+                # if (terminal in first_start):
+                #     value = ""
+                #     for el in production_rule:
+                #         value += el.value
+                #         value += " "
+                #     predictive_syntactic_table.loc[NonTerminal(k), terminal] = value.strip()
+                #     break
 
+
+        #### FOLLOW
 
         if Terminal('ε') in first_k:
             for terminal in follow_k:
                 added = False
                 for production_rule in production_rules_list:
-                    first_start = first_dict[production_rule[0].value] if type(production_rule[0]) is NonTerminal else set({production_rule[0],})
-                    assert first_start is not None
-                    if terminal != Terminal('$') and (terminal in first_start):
-                        value = ""
-                        for el in production_rule:
-                            value += el.value
-                            value += " "
+                    first_set = set()
+                    for symbol in production_rule:
+                        if isinstance(symbol, Terminal):
+                            first_set.add(symbol)
+                            if symbol.value != 'ε':  # Stop if non-nullable terminal found
+                                break
+                        else:
+                            first_non_terminal_first = first_dict.get(symbol.value, set())
+                            assert first_non_terminal_first is not None
+                            first_set |= (first_non_terminal_first - {Terminal('ε')})
+                            if Terminal('ε') not in first_non_terminal_first:
+                                break
+
+                    # If terminal is in the computed FIRST set
+                    if terminal in first_set:
+                        value = " ".join(el.value for el in production_rule)
                         predictive_syntactic_table.loc[NonTerminal(k), terminal] = value.strip()
                         added = True
                         break
-                    elif terminal == Terminal('$') and (Terminal('ε') in first_start):
-                        value = ""
-                        for el in production_rule:
-                            value += el.value
-                            value += " "
+
+                    # Special case for '$' (end of input)
+                    elif terminal == Terminal('$') and Terminal('ε') in first_set:
+                        value = " ".join(el.value for el in production_rule)
                         predictive_syntactic_table.loc[NonTerminal(k), terminal] = value.strip()
                         added = True
                         break
-                if not added and Terminal('ε') in first_k:
-                    predictive_syntactic_table.loc[NonTerminal(k), terminal] = 'ε'
-        if Terminal('ε') in first_k:
-            for terminal in follow_k:
-                added = False
-                for production_rule in production_rules_list:
-                    if production_rule == [Terminal('ε')]:
-                        predictive_syntactic_table.loc[NonTerminal(k), terminal] = 'ε'
-                        added = True
-                        break
+
                 if not added:
-                    predictive_syntactic_table.loc[NonTerminal(k), terminal] = "sinc"
+                    predictive_syntactic_table.loc[NonTerminal(k), terminal] = "ε"
+
+        # Handle explicit ε productions separately
+        for production_rule in production_rules_list:
+
+            for terminal in follow_k:
+                if predictive_syntactic_table.loc[NonTerminal(k), terminal] is None:
+                    predictive_syntactic_table.loc[NonTerminal(k), terminal] = 'ε'
+
+        # if Terminal('ε') in first_k:
+        #     for terminal in follow_k:
+        #         added = False
+        #         for production_rule in production_rules_list:
+        #             first_start = first_dict[production_rule[0].value] if type(production_rule[0]) is NonTerminal else set({production_rule[0],})
+        #             assert first_start is not None
+        #             if terminal != Terminal('$') and (terminal in first_start):
+        #                 value = ""
+        #                 for el in production_rule:
+        #                     value += el.value
+        #                     value += " "
+        #                 predictive_syntactic_table.loc[NonTerminal(k), terminal] = value.strip()
+        #                 added = True
+        #                 break
+        #             elif terminal == Terminal('$') and (Terminal('ε') in first_start):
+        #                 value = ""
+        #                 for el in production_rule:
+        #                     value += el.value
+        #                     value += " "
+        #                 predictive_syntactic_table.loc[NonTerminal(k), terminal] = value.strip()
+        #                 added = True
+        #                 break
+        #         if not added and Terminal('ε') in first_k:
+        #             predictive_syntactic_table.loc[NonTerminal(k), terminal] = 'ε'
+        # if Terminal('ε') in first_k:
+        #     for terminal in follow_k:
+        #         added = False
+        #         for production_rule in production_rules_list:
+        #             if production_rule == [Terminal('ε')]:
+        #                 predictive_syntactic_table.loc[NonTerminal(k), terminal] = 'ε'
+        #                 added = True
+        #                 break
+        #         if not added:
+        #             predictive_syntactic_table.loc[NonTerminal(k), terminal] = "sinc"
     return predictive_syntactic_table
 
 predictive_syntactic_table = create_table(production_rules)
@@ -284,11 +352,20 @@ def top_down_analysis(tape: list[Terminal], ) -> bool:
 
     return True
 
-example: list[Terminal] = [Terminal('id'), Terminal('id'), Terminal('op_attr'), Terminal('string'), Terminal('end_of_line')]
-print(f"Input: {example}\n")
+# example: list[Terminal] = [Terminal('id'), Terminal('id'), Terminal('op_attr'), Terminal('string'), Terminal('end_of_line')]
 
-result = top_down_analysis(example)
+EXAMPLE_CODE_PATH = argv[1]
 
+tokens = analysis.analyze_file(EXAMPLE_CODE_PATH)
 
+example_terminals: list[Terminal] = []
+
+for token in tokens:
+    if token[0].type != "spacing" and token[0].type != "error" and token[0].type != "comment":
+        example_terminals.append(terminal_from_token(token[0], token[2]))
+
+print(f"Input: {example_terminals}\n")
+
+result = top_down_analysis(example_terminals)
 
 print(f"\nAnalysis result: {'Success!' if result else 'Fail.'}")

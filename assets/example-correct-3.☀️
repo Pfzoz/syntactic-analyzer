@@ -1,0 +1,14 @@
+number e = 3123☕ 💭 Oi eu sou um comentário showdbola! 💭
+string texto = 📓eu sou uma string shodbola!📓☕
+number u = 1 ➕ 3☕
+u >= e☕
+number f = 92.23☕
+
+number f() 🏳
+    if (3 > 5) 🏳
+        print(📓3 maior que 5!!!:O📓)☕
+    🏁 else 🏳
+        print(📓3 menor que 5!!!:O📓)☕
+    🏁
+    return 3☕
+🏁

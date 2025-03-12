@@ -1,0 +1,18 @@
+number main () 🏳
+	number var1☕
+	number var2☕
+	loop (var1 > 0) 🏳
+		print(📓Escreva o valor de a📓)☕
+		input(var1)☕
+	🏁
+	print(📓Escreva o valor de b📓)☕
+	input(var2)☕
+	if (var1 > var2) 🏳
+		print(var1 ➕ 📓 é maior que 📓➕var2)☕
+		return var1☕
+	🏁
+	💭Se var1 for maior do que var2 retornamos var1💭
+	💭Caso contrário retornaremos var2 nas linhas abaixo 💭
+	print(var1 ➕ 📓 não é maior que 📓 ➕ var2 asd)☕
+	return boa☕
+🏁

@@ -2,6 +2,9 @@ number main () 🏳
 	number var1☕
 	number var2☕
 
+    var2 = 3☕
+    var3 = 3☕
+
 	loop (var1 > 0) 🏳
 		print(📓Escreva o valor de a📓)☕
 		input(var1)☕

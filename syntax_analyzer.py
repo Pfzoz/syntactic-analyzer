@@ -267,6 +267,9 @@ def get_symbols_from_table_string(s: str) -> list[Terminal | NonTerminal]:
 symbol_table: list[Dict[str, Dict[Literal["var_type", "value"], Any]]] = [{}]
 scopes_attributes: list[Dict[str, Any]] = [{"type": "global_scope", "value": None}]
 semantic_error_count = 0
+
+# helpers
+all_operations_id: Terminal | None = None
 scope_opener_attributes: dict = {}
 
 def open_scope():
@@ -280,6 +283,12 @@ def close_scope():
     else:
         print("Error: Cannot close global scope!")
 
+def lookup_variable(identifier: str) -> bool:
+    for scope in reversed(symbol_table):
+        if identifier in scope:
+            return True
+    return False
+
 def declare_variable(identifier: str, var_type: str, value: Any = None):
     global semantic_error_count
     for var in symbol_table[-1].keys():
@@ -291,12 +300,24 @@ def declare_variable(identifier: str, var_type: str, value: Any = None):
         symbol_table[-1][identifier] = {"var_type": var_type, "value": value}
 
 def execute_semantic_action(action: str | None, symbols: list[Terminal | NonTerminal], tape: list[Terminal], tape_pos: int, x: NonTerminal | Terminal):
+    global semantic_error_count, all_operations_id
     if action is None:
         return
     elif action == "open_scope":
         open_scope()
     elif action == "close_scope":
         close_scope()
+    elif action == "set_all_operations_id":
+        all_operations_id = tape[tape_pos]
+    elif action == "attribution":
+        if all_operations_id is None:
+            print("Semantic: Fatal error, no helper id to check for id declaration")
+            exit()
+        identifier_terminal = all_operations_id
+        identifier_str = str(identifier_terminal.value)
+        if not lookup_variable(identifier_str):
+            print(f"Error: Variable '{identifier_str}' is being attributed before declaration!")
+            semantic_error_count += 1
     elif action == "set_scope_opener":
         action_non_terminal_str = get_action_key(x.type, symbols).split("->")[0]
         scope_types = {

@@ -1,3 +1,4 @@
+import json
 from typing import Any, Dict, Literal
 import pandas as pd
 from pandas.core.groupby.grouper import DataFrame
@@ -12,14 +13,14 @@ data = pd.read_csv("grammar-data.csv")
 
 class Terminal:
 
-    def __init__(self, type: str, symbol: str | str = ".", line: int | None = None) -> None:
+    def __init__(self, type: str, value: Any = None, line: int | None = None) -> None:
         self.type: str = type
         self.line = line
-        self.symbol: str = symbol
+        self.value: Any = value
 
 
     def __repr__(self) -> str:
-        return f"Terminal({self.type})"
+        return f"Terminal({self.type}, {self.value})"
 
     def __eq__(self, value: object, /) -> bool:
         if (type(value) is Terminal):
@@ -46,20 +47,31 @@ class NonTerminal:
         return hash(self.type)
 
 def terminal_from_token(token: Token, line: int):
-    terminal = Terminal(token.type, line)
+    terminal = Terminal(token.type, token.value, line)
     return terminal
 
+production_rules_df = data[["NON_TERMINAL", "PRODUCTION"]]
+actions_df = data["ACTION"]
 non_terminals_df = data["NON_TERMINALS"].dropna()
 terminals_df = data["TERMINALS"].dropna()
-production_rules_df = data[["NON_TERMINAL", "PRODUCTION"]].dropna()
 
 non_terminals: list[NonTerminal] = [NonTerminal(i) for i in non_terminals_df]
 terminals: list[Terminal] = [Terminal(i) for i in terminals_df]
 production_rules: Dict[str, list[list[Terminal | NonTerminal]]] = {non_terminal.type: [] for non_terminal in non_terminals}
+actions_map: Dict[str, str | None] = {}
 
-for production_rule_row in production_rules_df.iterrows():
+def get_action_key(non_terminal: str, production: list[Terminal | NonTerminal]) -> str:
+    action_key = non_terminal + "->"
+    for el in production:
+        action_key += el.type
+    return action_key
+
+for i, production_rule_row in enumerate(production_rules_df.iterrows()):
     non_terminal: str | Any = production_rule_row[1]["NON_TERMINAL"]
     production: str | Any = production_rule_row[1]["PRODUCTION"]
+
+    if not pd.notna(non_terminal) or not pd.notna(production):
+        continue
 
     production_list = []
     if not non_terminal in production_rules.keys():
@@ -72,12 +84,16 @@ for production_rule_row in production_rules_df.iterrows():
         else:
             production_list.append(Terminal(el))
 
-
     production_rules[non_terminal].append(production_list)
+    actions_map[get_action_key(non_terminal, production_list)] = actions_df.loc[i] if pd.notna(actions_df.loc[i]) else None
 
-for k in production_rules.keys():
-    if (len(production_rules[k]) == 0):
-        print(f"Error: empty production for {k}")
+with open("actions_map.txt", 'w+') as actions_map_file:
+    for action_key, action in actions_map.items():
+        actions_map_file.write(f"Action({action_key}) = {action}\n")
+
+for action_key in production_rules.keys():
+    if (len(production_rules[action_key]) == 0):
+        print(f"Error: empty production for {action_key}")
         exit()
 
 def get_first(symbol: NonTerminal | Terminal,
@@ -154,13 +170,13 @@ follow_dict: Dict[str, set[Terminal] | None] = {
     non_terminal.type: get_follow(non_terminal, production_rules) for non_terminal in non_terminals
 }
 
-with open("follow.txt", 'w+') as follow_file:
-    for k, follow_list in follow_dict.items():
-        follow_file.write(f"Follow({k}) = {follow_list}\n")
+with open("follow.txt", 'w+') as actions_map_file:
+    for action_key, action in follow_dict.items():
+        actions_map_file.write(f"Follow({action_key}) = {action}\n")
 
 with open("first.txt", 'w+') as first_file:
-    for k, first_list in first_dict.items():
-        first_file.write(f"First({k}) = {first_list}\n")
+    for action_key, first_list in first_dict.items():
+        first_file.write(f"First({action_key}) = {first_list}\n")
 
 def create_table(production_rules: Dict[str, list[list[Terminal | NonTerminal]]]) -> DataFrame:
     terminals_with_start_symbol = terminals.copy()
@@ -249,42 +265,73 @@ def get_symbols_from_table_string(s: str) -> list[Terminal | NonTerminal]:
 ## SEMANTIC
 
 symbol_table: list[Dict[str, Dict[Literal["var_type", "value"], Any]]] = [{}]
-scopes_attributes: list[Dict[str, Any]] = [{"type": "global_scope"}]
+scopes_attributes: list[Dict[str, Any]] = [{"type": "global_scope", "value": None}]
 semantic_error_count = 0
+scope_opener_attributes: dict = {}
 
 def open_scope():
     symbol_table.append({})
+    scopes_attributes.append(scope_opener_attributes)
 
 def close_scope():
     if len(symbol_table) > 1:
         symbol_table.pop()
+        scopes_attributes.pop()
     else:
         print("Error: Cannot close global scope!")
 
 def declare_variable(identifier: str, var_type: str, value: Any = None):
-    current_scope = symbol_table[-1]
-    for var in current_scope.keys():
+    global semantic_error_count
+    for var in symbol_table[-1].keys():
         if var == identifier:
             print(f"Error: Duplicate variable '{identifier}' in the same scope.")
             semantic_error_count += 1
             return
     else:
-        # Optionally store additional information such as type and value.
-        current_scope[identifier] = {"var_type": var_type, "value": value}
+        symbol_table[-1][identifier] = {"var_type": var_type, "value": value}
 
-def execute_semantic_action(action: str, **kwargs):
-    if action == "open_scope":
+def execute_semantic_action(action: str | None, symbols: list[Terminal | NonTerminal], tape: list[Terminal], tape_pos: int, x: NonTerminal | Terminal):
+    if action is None:
+        return
+    elif action == "open_scope":
         open_scope()
     elif action == "close_scope":
         close_scope()
+    elif action == "set_scope_opener":
+        action_non_terminal_str = get_action_key(x.type, symbols).split("->")[0]
+        scope_types = {
+            "SENTENCE_BODY": "generic",
+            "<FUNCTION_DECLARATION>": "function",
+            "<LOOP'>": "loop",
+            "<DECLARED_LOOP>": "loop",
+            "<CONDITION_SEQUENCE>": "if",
+            "<ALTERNATIVE_CONDITIONS'>": "else if"
+        }
+        scope_type = scope_types[action_non_terminal_str]
+        if action == "<ALTERNATIVE_CONDITIONS'>-><BLOCK>": scope_type = "else"
+        global scope_opener_attributes
+        value = None
+        if action_non_terminal_str == "<FUNCTION_DECLARATION>":
+            last_scope = symbol_table[-1]
+            last_symbol = list(last_scope.keys())[-1]
+            value = last_symbol
+        scope_opener_attributes = {
+            "type": scope_type,
+            "value": value,
+        }
     elif action == "declare":
-        identifier: str = str(kwargs.get("identifier"))
-        var_type: str = str(kwargs.get("var_type"))
-        value: Any = kwargs.get("value")
-        declare_variable(identifier, var_type, value)
-
+        var_type = tape[tape_pos].type if tape[tape_pos + 2] == Terminal("op_attr") or tape[tape_pos + 2] == Terminal("end_of_line") else "function"
+        identifier_terminal = tape[tape_pos + 1]
+        value = tape[tape_pos + 3].value if tape[tape_pos + 2] == Terminal("op_attr") else None
+        assert type(identifier_terminal) is Terminal
+        declare_variable(str(identifier_terminal.value), var_type, value)
 
 ## TOP DOWN
+
+def print_symbol_table():
+    for i, scope in enumerate(symbol_table):
+        print(f"SCOPE {i}; ATTRIBUTES {scopes_attributes[i]}")
+        print(json.dumps(scope, indent=4))
 
 def top_down_analysis(tape: list[Terminal], ) -> bool:
     tape.append(Terminal('$'))
@@ -296,14 +343,20 @@ def top_down_analysis(tape: list[Terminal], ) -> bool:
 
     show_symbols = "-ss" in argv
     show_grammar_results = "-sg" in argv
+    show_symbol_table = "-st" in argv
 
     while x != Terminal('$'):
         if show_symbols:
             print(f"\nTape: {tape} (Pos: {i})")
             print(f"Heap: {heap}")
             print(f"[{x}, {a}]")
+        if show_symbol_table:
+            print("==SYMBOL TABLE==")
+            print_symbol_table()
         if type(x) is Terminal:
             if x == a:
+                if a == Terminal("final_block"):
+                    execute_semantic_action("close_scope", [], tape, i, x)
                 heap.pop()
                 i += 1
             else:
@@ -316,18 +369,21 @@ def top_down_analysis(tape: list[Terminal], ) -> bool:
             if pd.notna(predictive_syntactic_table.loc[x, a]):
                 if predictive_syntactic_table.loc[x, a] != "sinc":
                     symbols = get_symbols_from_table_string(predictive_syntactic_table.loc[x, a])
+                    action_key = get_action_key(x.type, symbols)
+                    action = actions_map.get(action_key, None)
+                    execute_semantic_action(action, symbols, tape, i, x)
                     if show_grammar_results:
-                        print(f"{x} -> {symbols}")
+                        print(f"{x} -> {symbols} (Action: {action})")
                     symbols.reverse()
                     if Terminal('ε') in symbols:
                         symbols.remove(Terminal('ε'))
                     heap.pop()
                     heap.extend(symbols)
                 else:
-                    print(f"Sinc encountered! Token {i}, line {a.line}: {a}. Token: {a.symbol}")
+                    print(f"Sinc encountered! Token {i}, line {a.line}: {a}. Token: {a.value}")
                     heap.pop()
             else:
-                print(f"Error found at token {i}, line {a.line}: {a} (No entry on PST). Token {a.symbol} discarded.")
+                print(f"Error found at token {i}, line {a.line}: {a} (No entry on PST). Token {a.value} discarded.")
                 if a == Terminal('$'):
                     print("Could not recognize end of grammar.")
                     return False
@@ -353,4 +409,5 @@ print(f"Input: {example_terminals}\n")
 
 result = top_down_analysis(example_terminals)
 
-print(f"\nAnalysis result: {'Success!' if result else 'Fail.'}")
+print(f"\nSyntax Analysis result: {'Success!' if result else 'Fail.'}")
+print(f"Semantic Analysis result: {'Success!' if semantic_error_count == 0 else 'Fail.'}")
